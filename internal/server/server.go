@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,24 +10,27 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Dimix-international/API_MySQL_GO/db"
 	"github.com/Dimix-international/API_MySQL_GO/internal/config"
 	"github.com/Dimix-international/API_MySQL_GO/internal/handlers"
 	"github.com/Dimix-international/API_MySQL_GO/internal/models"
+	"github.com/Dimix-international/API_MySQL_GO/internal/service"
+
+	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
-	cfg     config.Config
-	db      *sql.DB
-	log     *slog.Logger
-	closers []models.CloseFunc
-	router  *mux.Router
+	cfg         config.Config
+	log         *slog.Logger
+	closers     []models.CloseFunc
+	router      *mux.Router
+	userService *service.UserService
 }
 
-func NewAPIServer(cfg config.Config, db *sql.DB, log *slog.Logger) *APIServer {
+func NewAPIServer(cfg config.Config, log *slog.Logger) *APIServer {
 	return &APIServer{
 		cfg: cfg,
-		db:  db,
 		log: log,
 	}
 }
@@ -55,6 +57,7 @@ func (s *APIServer) Run() {
 }
 
 func (s *APIServer) launchServer() error {
+	s.initDBAndServices()
 	s.initRoutes()
 
 	httpServer := &http.Server{
@@ -75,11 +78,29 @@ func (s *APIServer) launchServer() error {
 	return nil
 }
 
+func (s *APIServer) initDBAndServices() error {
+	client, err := db.NewDb(mysql.Config{
+		User:                 s.cfg.Database.User,
+		Passwd:               s.cfg.Database.Password,
+		Net:                  s.cfg.Database.Net,
+		DBName:               s.cfg.Database.Name,
+		Addr:                 s.cfg.Database.Addr,
+		AllowNativePasswords: true,
+		ParseTime:            true,
+	})
+	if err != nil {
+		return err
+	}
+
+	s.userService = service.NewUserService(s.log, db.NewUserStorage(client.DB))
+	return nil
+}
+
 func (s *APIServer) initRoutes() {
 	s.router = mux.NewRouter()
 	subrouter := s.router.PathPrefix("/api/v1").Subrouter()
 
-	handlers.NewUserHandler(s.log).RegisterUserRoutes(subrouter)
+	handlers.NewUserHandler(s.log, service.NewUserService(s.log, s.userService)).RegisterUserRoutes(subrouter)
 }
 
 func (s *APIServer) AddCloser(closer models.CloseFunc) {

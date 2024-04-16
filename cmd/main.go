@@ -19,6 +19,6 @@ func main() {
 	cfg := config.MustLoadConfig()
 	log := logger.SetupLogger(cfg.Env)
 
-	server.NewAPIServer(cfg, nil, log).Run()
+	server.NewAPIServer(cfg, log).Run()
 	log.Info("app finish")
 }

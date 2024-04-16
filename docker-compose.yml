@@ -1,36 +1,41 @@
-version: '3'
+version: '3.8'
 services:
-
-  db:
-    image: mysql:8.0
-    healthcheck:
-      test: "exit 0"
-    volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: dima94MYSQL
-      MYSQL_DATABASE: ecom
-
   api:
     build: 
       context: .
       dockerfile: Dockerfile
-    restart: on-failure
-    volumes:
-      - .:/go/src/api
+    container_name: api
+    restart: always
     ports:
       - "8080:8080"
+    volumes:
+      - ./.env:/app/.env
     environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: dima94MYSQL
-      DB_NAME: ecom
-    links:
-      - db
+      DB_ADDRESS: "127.0.0.1/3306"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  db:
+    image: mysql:8.0
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    volumes:
+      - db_data:/var/lib/mysql
+    container_name: mysql
+    ports:
+      - '3007:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: dima94MYSQL
+      MYSQL_DATABASE: ecom
+    networks:
+      - my-network
 
 volumes:
   db_data:
+
+networks:
+  my-network:

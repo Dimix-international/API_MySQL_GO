@@ -4,15 +4,18 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/Dimix-international/API_MySQL_GO/internal/service"
+
 	"github.com/gorilla/mux"
 )
 
 type UserHandler struct {
-	log *slog.Logger
+	log         *slog.Logger
+	userService service.ServiceUser
 }
 
-func NewUserHandler(log *slog.Logger) *UserHandler {
-	return &UserHandler{log: log}
+func NewUserHandler(log *slog.Logger, userService service.ServiceUser) *UserHandler {
+	return &UserHandler{log: log, userService: userService}
 }
 
 func (h *UserHandler) RegisterUserRoutes(router *mux.Router) {

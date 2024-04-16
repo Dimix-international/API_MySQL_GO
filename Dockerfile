@@ -1,26 +1,21 @@
-# syntax=docker/dockerfile:1
-
 # Build the application from source
-FROM golang:1.22.0 AS build-stage
-  WORKDIR /app
+FROM golang:1.22.0-alpine
 
-  COPY go.mod go.sum ./
-  RUN go mod download
+WORKDIR /app/src
 
-  COPY . .
+# Download Go modules
+COPY go.mod go.sum ./
+RUN go mod download
 
-  RUN CGO_ENABLED=0 GOOS=linux go build -o /api ./cmd/main.go
+COPY . .
 
-  # Run the tests in the container
-FROM build-stage AS run-test-stage
-  RUN go test -v ./...
+RUN go build -o ../API_MySQL_GO ./cmd/main.go
 
-# Deploy the application binary into a lean image
-FROM scratch AS build-release-stage
-  WORKDIR /
+WORKDIR /app
 
-  COPY --from=build-stage /api /api
+RUN rm -rf src
 
-  EXPOSE 8080
+EXPOSE 8080
 
-  ENTRYPOINT ["/api"]
+#Run
+CMD ["/app/API_MySQL_GO"]
