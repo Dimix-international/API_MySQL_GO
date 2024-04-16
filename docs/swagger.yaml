@@ -1,0 +1,13 @@
+info:
+  contact: {}
+  termsOfService: http://swagger.io/terms/
+  title: Swagger User management API
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  JWT:
+    description: JWT Authorization header "Bearer auth_token"
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

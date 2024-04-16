@@ -12,3 +12,12 @@ mockery-install:
 
 generate-mocks:
 	go generate ./...
+
+swagger_install:
+	go install github.com/swaggo/swag/cmd/swag@latest
+
+swagger:
+	rmdir /S /Q docs && mkdir docs && swag init -g ./cmd/main.go -dir .	
+
+swagger-ubu:
+	rm -rf docs && mkdir docs && swag init -g ./cmd/main.go -dir .	
