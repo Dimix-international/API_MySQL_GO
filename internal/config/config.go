@@ -16,15 +16,16 @@ var (
 )
 
 type Config struct {
+	Env        string `env:"ENV"`
 	HTTPServer ServerHTTP
 	Database   DB
 }
 
 type ServerHTTP struct {
-	Port        string        `env:"HTTP_SERVER_PORT"`
-	Address     string        `env:"HTTP_SERVER_ADDRESS"`
-	Timeout     time.Duration `env:"HTTP_SERVER_TIMEOUT"`
-	IdleTimeout time.Duration `env:"HTTP_SERVER_IDLE_TIMEOUT"`
+	Port        string        `env:"PORT"`
+	Address     string        `env:"ADDRESS"`
+	Timeout     time.Duration `env:"TIMEOUT"`
+	IdleTimeout time.Duration `env:"IDLE_TIMEOUT"`
 }
 
 type DB struct {
